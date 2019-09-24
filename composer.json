@@ -16,13 +16,13 @@
     },
     "autoload": {
         "psr-4": {
-            "\\m7\\Iam\\": "src/"
+            "m7\\Iam\\": "src/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "m7\\Iam\\IamManagerServiceProvider"
+                "\\m7\\Iam\\IamManagerServiceProvider"
             ],
             "aliases": {
                 "Manager": "m7\\Iam\\Facades\\Manager"
