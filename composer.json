@@ -1,0 +1,22 @@
+{
+    "name": "mseven/iammanager",
+    "description": "Laravel wrapper for IAM created by M7 s.r.o.",
+    "type": "wrapper",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Adam Ondrejkovic",
+            "email": "ondrejkovic@m7.sk"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "guzzlehttp/guzzle": "^6.3",
+        "ext-json": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "m7\\iam\\": "src/"
+        }
+    }
+}
