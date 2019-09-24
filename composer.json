@@ -1,5 +1,5 @@
 {
-    "name": "mseven/iammanager",
+    "name": "m7/iam",
     "description": "Laravel wrapper for IAM created by M7 s.r.o.",
     "type": "wrapper",
     "license": "MIT",
