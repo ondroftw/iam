@@ -25,7 +25,6 @@ class IamManagerServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->bind('manager', Manager::class);
         $this->mergeConfigFrom(__DIR__.'/config/iammanager.php', 'iammanager');
     }
 }

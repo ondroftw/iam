@@ -5,6 +5,10 @@
     "license": "MIT",
     "authors": [
         {
+            "name": "m7 s.r.o.",
+            "email": "info@m7.sk"
+        },
+        {
             "name": "Adam Ondrejkovic",
             "email": "ondrejkovic@m7.sk"
         }
@@ -17,16 +21,16 @@
     "autoload": {
         "psr-4": {
             "m7\\Iam\\": "src/"
-        }
+        },
+        "files": [
+            "src/helpers.php"
+        ]
     },
     "extra": {
         "laravel": {
             "providers": [
                 "\\m7\\Iam\\IamManagerServiceProvider"
-            ],
-            "aliases": {
-                "Manager": "\\m7\\Iam\\Facades\\Manager"
-            }
+            ]
         }
     }
 }

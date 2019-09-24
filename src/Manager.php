@@ -41,13 +41,14 @@ class Manager
             $responseObject = json_decode($res->getBody());
             if ($responseObject->access_token) {
                 return true;
+            } else {
+                Log::error("Invalid response from IAM service");
+                return false;
             }
 
         } catch (GuzzleException $exception) {
             Log::error($exception->getMessage());
             return false;
         }
-
-        return false;
     }
 }
