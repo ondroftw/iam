@@ -16,7 +16,7 @@
     },
     "autoload": {
         "psr-4": {
-            "m7\\iam\\": "src/"
+            "m7\\Iam\\": "src/"
         }
     },
     "extra": {
