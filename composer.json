@@ -18,5 +18,15 @@
         "psr-4": {
             "m7\\iam\\": "src/"
         }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "m7\\Iam\\IamManagerServiceProvider"
+            ],
+            "aliases": {
+                "Manager": "m7\\Iam\\Facades\\Manager"
+            }
+        }
     }
 }
