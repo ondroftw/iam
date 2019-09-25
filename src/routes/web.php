@@ -7,5 +7,5 @@
  */
 
 Route::group(['namespace' => 'm7\Iam\Http\Controllers', 'middleware' => ['web']], function() {
-    Route::get('iam/login', 'LoginController@login')->name('iam.manager.login');
+    Route::post('iam/login', 'LoginController@login')->name('iam.manager.login');
 });

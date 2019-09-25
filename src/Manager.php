@@ -12,6 +12,7 @@ namespace m7\Iam;
 use App\User;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\GuzzleException;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 
@@ -81,8 +82,14 @@ class Manager
             $responseObject = json_decode($response->getBody());
 
             if ($token = $responseObject->access_token) {
+
                 Session::put("access_token", $token);
-                return $this->createOrUpdateUser();
+
+                $user = $this->createOrUpdateUser();
+                Auth::login($user);
+
+                return $user;
+
             } else {
                 Log::error("Invalid response from IAM service");
                 return false;
@@ -138,6 +145,7 @@ class Manager
         foreach (self::RESPONSE_COLUMNS as $responsecolumn => $dbcolumn) {
             $eloquentDataArray[$dbcolumn] = $responseObject->{$responsecolumn};
         }
+        $eloquentDataArray["password"] = "n/a";
 
         return $eloquentDataArray;
     }
