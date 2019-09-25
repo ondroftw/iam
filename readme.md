@@ -41,6 +41,13 @@ class User extends Authenticatable
 }
 ```
 ## Configuration
+### .env values
+```dotenv
+IAM_MANAGER_SERVER=https://server.url
+IAM_MANAGER_CLIENT_ID=XXXXX
+IAM_MANAGER_CLIENT_SECRET=XXXXX
+IAM_MANAGER_REDIRECT_URL=/success # url to which user is redirected after successfull login
+```
 ### Middleware
 This is not required, but very useful. You can register middleware shipped with this package to protect
 certain routes or route groups based on scopes assigned to users in IAM.
@@ -72,6 +79,13 @@ manager helper instance `iam_manager()->login($username, $password)`
 
 `iam_manager()->login` method returns instance of `User` model if successfully logged in, `false` otherwise.
 
+### Trait methods
+If you successfully added `Iam` trait to user model, you can now access several methods:
+```php
+Auth::user()->getScopes() // get all scopes assigned to this user
+Auth::user()->hasScope($scope) // check if user has certain scope ($scope can also be array, that way you can check if user has multiple scopes)
+```
+
 ### Middleware
 If you registered middleware during configuration, you can protect routes or route groups based on scopes
 provided by IAM.
@@ -92,11 +106,4 @@ Route::middleware('iam.scopes:auth.users.manage|auth.groups.view')->group(functi
         echo "This route is scope protected";
     });
 })
-```
-
-### Trait methods
-If you successfully added `Iam` trait to user model, you can now access several methods:
-```php
-Auth::user()->getScopes() // get all scopes assigned to this user
-Auth::user()->hasScope($scope) // check if user has certain scope ($scope can also be array, that way you can check multiple scopes)
 ```
