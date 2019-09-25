@@ -108,13 +108,7 @@ class Manager
     public function createOrUpdateUser()
     {
         try {
-            $response = $this->client->request("GET", "{$this->serverUrl}/users/whoAmI", [
-                "headers" => [
-                    "Authorization" => $this->getAuthorizationHeader(),
-                ]
-            ]);
-
-            $responseObject = json_decode($response->getBody());
+            $responseObject = $this->getUserResponse();
             $data = $this->getEloquentDataArray($responseObject);
 
             if ($user = User::whereIamUid($responseObject->user_id)->first()) {
@@ -130,6 +124,49 @@ class Manager
             return false;
 
         }
+    }
+
+    /**
+     * @return array
+     * @author Adam Ondrejkovic
+     */
+    public function getUserScopes()
+    {
+        try {
+            $scopes = [];
+
+            foreach ($this->getUserResponse()->groups as $group) {
+                foreach ($group->scopes as $scope) {
+                    if (!in_array($scope, $scopes)) {
+                        $scopes[] = $scope;
+                    }
+                }
+            }
+
+            return $scopes;
+
+        } catch (GuzzleException $exception) {
+
+            Log::error($exception->getMessage());
+            return [];
+
+        }
+    }
+
+    /**
+     * @return mixed
+     * @throws GuzzleException
+     * @author Adam Ondrejkovic
+     */
+    public function getUserResponse()
+    {
+        $response = $this->client->request("GET", "{$this->serverUrl}/users/whoAmI", [
+            "headers" => [
+                "Authorization" => $this->getAuthorizationHeader(),
+            ]
+        ]);
+
+        return json_decode($response->getBody());
     }
 
     /**
