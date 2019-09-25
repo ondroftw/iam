@@ -1,6 +1,7 @@
 {
     "name": "m7/iam",
     "description": "Laravel wrapper for IAM created by M7 s.r.o.",
+    "keywords": [ "iam", "laravel", "sdk", "api", "m7"],
     "type": "wrapper",
     "license": "MIT",
     "authors": [
@@ -15,6 +16,8 @@
     ],
     "minimum-stability": "dev",
     "require": {
+        "php": "^7.2",
+        "laravel/framework": ">=6.0",
         "guzzlehttp/guzzle": "^6.3",
         "ext-json": "*",
         "doctrine/dbal": "^2.9"

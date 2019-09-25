@@ -9,6 +9,7 @@
 namespace m7\Iam;
 
 
+use App\User;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Log;
@@ -16,6 +17,13 @@ use Illuminate\Support\Facades\Session;
 
 class Manager
 {
+    const RESPONSE_COLUMNS = [
+        "user_id" => "iam_uid",
+        "name" => "name",
+        "email" => "email",
+        "surname" => "surname",
+    ];
+
     /**
      * @var GuzzleClient
      */
@@ -74,7 +82,7 @@ class Manager
 
             if ($token = $responseObject->access_token) {
                 Session::put("access_token", $token);
-                return true;
+                return $this->createOrUpdateUser();
             } else {
                 Log::error("Invalid response from IAM service");
                 return false;
@@ -87,7 +95,7 @@ class Manager
     }
 
     /**
-     * @return bool
+     * @return bool|User
      * @author Adam Ondrejkovic
      */
     public function createOrUpdateUser()
@@ -99,13 +107,38 @@ class Manager
                 ]
             ]);
 
-            dd(json_decode($response->getBody()));
-            return true;
+            $responseObject = json_decode($response->getBody());
+            $data = $this->getEloquentDataArray($responseObject);
+
+            if ($user = User::whereIamUid($responseObject->user_id)->first()) {
+                $user->update($data);
+            } else {
+                $user = User::create($data);
+            }
+
+            return $user;
 
         } catch (GuzzleException $exception) {
             Log::error($exception->getMessage());
             return false;
 
         }
+    }
+
+    /**
+     * @param $responseObject
+     *
+     * @return array
+     * @author Adam Ondrejkovic
+     */
+    public function getEloquentDataArray($responseObject)
+    {
+        $eloquentDataArray = [];
+
+        foreach (self::RESPONSE_COLUMNS as $responsecolumn => $dbcolumn) {
+            $eloquentDataArray[$dbcolumn] = $responseObject->{$responsecolumn};
+        }
+
+        return $eloquentDataArray;
     }
 }
