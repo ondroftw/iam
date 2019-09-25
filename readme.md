@@ -55,6 +55,8 @@ protected $routeMiddleware = [
 Also, do not forget to add `use` directive with correct namespace before the `Kernel` class: <br/>
 `use m7\Iam\Http\Middleware\IamScopes;`
 ## Usage
+
+### Basic
 You can always get instance of iam manager class via helper function `iam_manager()` if you need to do so.
 
 There is one route for login created, which you should use to login your users
@@ -64,6 +66,28 @@ Route::post('iam/login', 'LoginController@login')->name('iam.manager.login');
 Request body for this route should contain `username` and `password` keys with corresponding values.
 
 Alternatively, if you do not want to use this particular route for some reason, you can login your user via
-manager helper instance `iam_manager->login($username, $password)`
+manager helper instance `iam_manager()->login($username, $password)`
 
-`->login` method above returns instance of `User` model if successfully logged in and `false` otherwise.
+`iam_manager()->login` method returns instance of `User` model if successfully logged in, `false` otherwise.
+
+### Middleware
+If you registered middleware during configuration, you can protect routes or route groups based on scopes
+provided by IAM.
+#### Single scope
+Example usage of `iam.scopes` middleware for single scope could look like this
+```php
+Route::middleware('iam.scopes:auth.users.manage')->group(function () {
+    Route::get('users/manage', function() {
+        echo "This route is scope protected
+    });
+})
+```
+#### Multiple scope
+You can also use multiple scopes. Just separate them with pipe (`|`), and you can use as many scopes as you want:
+```php
+Route::middleware('iam.scopes:auth.users.manage|auth.groups.view')->group(function () {
+    Route::get('users/manage', function() {
+        echo "This route is scope protected
+    });
+})
+```
