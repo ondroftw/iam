@@ -1,24 +1,24 @@
 <?php
-/**
- * @author Adam Ondrejkovic
- * Created by PhpStorm.
- * Date: 24/09/2019
- * Time: 14:02
- */
 
 namespace m7\Iam;
 
-
 use App\User;
+use Firebase\JWT\JWT;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
+use Firebase\JWT\BeforeValidException;
+use Firebase\JWT\ExpiredException;
+use Firebase\JWT\SignatureInvalidException;
+use \UnexpectedValueException;
 
 class Manager
 {
-    const IAM_TOKEN_SESSION_KEY = 'iam_token';
+    const   IAM_ACCESS_TOKEN_SESSION_KEY = 'iam_access_token',
+            IAM_REFRESH_TOKEN_SESSION_KEY = 'iam_refresh_token';
 
     const RESPONSE_COLUMNS = [
         "user_id" => "iam_uid",
@@ -39,12 +39,19 @@ class Manager
     private $serverUrl;
 
     /**
+     * @author Adam Ondrejkovic
+     * @var
+     */
+    private $keyFile;
+
+    /**
      * Manager constructor.
      */
     public function __construct()
     {
         $this->client = new GuzzleClient();
         $this->serverUrl = config('iammanager.server');
+        $this->keyFile = file_get_contents(base_path(config('iammanager.public_key')));
     }
 
     /**
@@ -53,7 +60,7 @@ class Manager
      */
     public function getAuthorizationHeader()
     {
-        $token = Session::get(self::IAM_TOKEN_SESSION_KEY);
+        $token = Session::get(self::IAM_ACCESS_TOKEN_SESSION_KEY);
         return "Bearer {$token}";
     }
 
@@ -83,24 +90,50 @@ class Manager
 
             $responseObject = json_decode($response->getBody());
 
-            if ($token = $responseObject->access_token) {
+            if ($responseObject->access_token) {
 
-                Session::put(self::IAM_TOKEN_SESSION_KEY, $token);
+                $this->setSessionValues($responseObject);
 
                 $user = $this->createOrUpdateUser();
                 Auth::login($user);
+
+                $scopes = explode(" ", $responseObject->scope);
+                if (config('iammanager.use_cache') and !empty($scopes)) {
+                    Cache::put("{$user->id}-scopes", $scopes);
+                }
 
                 return $user;
 
             } else {
                 Log::error("Invalid response from IAM service");
                 return false;
-            }
 
+            }
         } catch (GuzzleException $exception) {
             Log::error($exception->getMessage());
             return false;
+
         }
+    }
+
+    /**
+     * @param $responseObject
+     *
+     * @author Adam Ondrejkovic
+     */
+    public function setSessionValues($responseObject)
+    {
+        Session::put(self::IAM_ACCESS_TOKEN_SESSION_KEY, $responseObject->access_token);
+        Session::put(self::IAM_REFRESH_TOKEN_SESSION_KEY, $responseObject->refresh_token);
+    }
+
+    /**
+     * @author Adam Ondrejkovic
+     */
+    public function removeSessionValues()
+    {
+        Session::remove(self::IAM_ACCESS_TOKEN_SESSION_KEY);
+        Session::remove(self::IAM_REFRESH_TOKEN_SESSION_KEY);
     }
 
     /**
@@ -135,19 +168,9 @@ class Manager
     public function getUserScopes()
     {
         try {
-            $scopes = [];
+            return explode(" ", $this->getAccessTokenDecoded()->scope);
 
-            foreach ($this->getUserResponse()->groups as $group) {
-                foreach ($group->scopes as $scope) {
-                    if (!in_array($scope, $scopes)) {
-                        $scopes[] = $scope;
-                    }
-                }
-            }
-
-            return $scopes;
-
-        } catch (GuzzleException $exception) {
+        } catch (\Exception $exception) {
 
             Log::error($exception->getMessage());
             return [];
@@ -195,6 +218,83 @@ class Manager
      */
     public function getAccessToken()
     {
-        return Session::get(self::IAM_TOKEN_SESSION_KEY);
+        return Session::get(self::IAM_ACCESS_TOKEN_SESSION_KEY);
+    }
+
+    /**
+     * @return mixed
+     * @author Adam Ondrejkovic
+     */
+    public function getRefreshToken()
+    {
+        return Session::get(self::IAM_REFRESH_TOKEN_SESSION_KEY);
+    }
+
+    /**
+     * @return object
+     * @throws \Exception
+     * @author Adam Ondrejkovic
+     */
+    public function getAccessTokenDecoded()
+    {
+        if (!$this->issetValidAccessToken()) {
+            throw new \Exception("Invalid access token is set");
+        }
+
+        return JWT::decode($this->getAccessToken(), $this->keyFile, ['RS256']);
+    }
+
+    /**
+     * @return bool
+     * @author Adam Ondrejkovic
+     */
+    public function refreshToken()
+    {
+        try {
+            $response = $this->client->request('POST', "{$this->serverUrl}/oauth/token", [
+                'form_params' => [
+                    'grant_type' => 'refresh_token',
+                    'client_id' => config('iammanager.client_id'),
+                    'client_secret' => config('iammanager.client_secret'),
+                    'refresh_token' => $this->getRefreshToken(),
+                ]
+            ]);
+
+            $responseObject = json_decode($response->getBody());
+
+            if ($responseObject->access_token) {
+                $this->setSessionValues($responseObject);
+                return true;
+            }
+
+            return false;
+        } catch (GuzzleException $exception) {
+            Log::error($exception->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * @return bool
+     *
+     * @throws UnexpectedValueException     Provided JWT was invalid
+     * @throws SignatureInvalidException    Provided JWT was invalid because the signature verification failed
+     * @throws BeforeValidException         Provided JWT is trying to be used before it's eligible as defined by 'nbf'
+     * @throws BeforeValidException         Provided JWT is trying to be used before it's been created as defined by 'iat'
+     * @throws ExpiredException             Provided JWT has since expired, as defined by the 'exp' claim
+     *
+     * @author Adam Ondrejkovic
+     */
+    public function issetValidAccessToken()
+    {
+        try {
+            JWT::decode($this->getAccessToken(), $this->keyFile, ['RS256']);
+            return true;
+        } catch (ExpiredException $exception) {
+            return $this->refreshToken();
+        } catch (UnexpectedValueException $exception) {
+            Log::error($exception->getMessage());
+            return false;
+        }
     }
 }

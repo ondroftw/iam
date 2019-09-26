@@ -2,6 +2,8 @@
 
 namespace m7\Iam\Traits;
 
+use Carbon\Carbon;
+use Carbon\CarbonInterval;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use m7\Iam\Manager;
@@ -23,7 +25,7 @@ trait Iam {
             $scopes = iam_manager()->getUserScopes();
 
             if (!empty($scopes)) {
-                Cache::put($key, $scopes, 60 * 60 * 6); // 6 hours
+                Cache::put($key, $scopes, CarbonInterval::hours(6)->totalSeconds);
             }
 
             return $scopes;
