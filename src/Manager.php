@@ -97,10 +97,7 @@ class Manager
                 $user = $this->createOrUpdateUser();
                 Auth::login($user);
 
-                $scopes = explode(" ", $responseObject->scope);
-                if (config('iammanager.use_cache') and !empty($scopes)) {
-                    Cache::put("{$user->id}-scopes", $scopes);
-                }
+                $user->getScopes();
 
                 return $user;
 

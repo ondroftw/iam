@@ -19,7 +19,6 @@ trait Iam {
         $key = "{$this->id}-scopes";
 
         if (Cache::has($key)) {
-            Log::info("Getting {$key} from cache");
             return Cache::get($key);
         } else {
             $scopes = iam_manager()->getUserScopes();
