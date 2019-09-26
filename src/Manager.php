@@ -85,7 +85,7 @@ class Manager
 
             if ($token = $responseObject->access_token) {
 
-                Session::put(self::IAM_TOKEN_KEY, $token);
+                Session::put(self::IAM_TOKEN_SESSION_KEY, $token);
 
                 $user = $this->createOrUpdateUser();
                 Auth::login($user);
