@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\Session;
 
 class Manager
 {
+    const IAM_TOKEN_SESSION_KEY = 'iam_token';
+
     const RESPONSE_COLUMNS = [
         "user_id" => "iam_uid",
         "name" => "name",
@@ -83,7 +85,7 @@ class Manager
 
             if ($token = $responseObject->access_token) {
 
-                Session::put("access_token", $token);
+                Session::put(self::IAM_TOKEN_KEY, $token);
 
                 $user = $this->createOrUpdateUser();
                 Auth::login($user);
@@ -185,5 +187,14 @@ class Manager
         $eloquentDataArray["password"] = "n/a";
 
         return $eloquentDataArray;
+    }
+
+    /**
+     * @return mixed
+     * @author Adam Ondrejkovic
+     */
+    public function getAccessToken()
+    {
+        return Session::get(self::IAM_TOKEN_SESSION_KEY);
     }
 }
