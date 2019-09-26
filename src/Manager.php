@@ -79,7 +79,7 @@ class Manager
     public function login(string $username, string $password)
     {
         try {
-            $response = $this->client->request('POST', "/oauth/token", [
+            $response = $this->client->request('POST', "/api/oauth/token", [
                 'form_params' => [
                     'grant_type' => config('iammanager.grant_type'),
                     'username' => $username,
@@ -259,7 +259,7 @@ class Manager
     public function refreshToken()
     {
         try {
-            $response = $this->client->request('POST', "/oauth/token", [
+            $response = $this->client->request('POST', "/api/oauth/token", [
                 'form_params' => [
                     'grant_type' => 'refresh_token',
                     'client_id' => config('iammanager.client_id'),
