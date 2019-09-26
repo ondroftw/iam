@@ -7,7 +7,6 @@ use Firebase\JWT\JWT;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Firebase\JWT\BeforeValidException;
@@ -49,7 +48,10 @@ class Manager
      */
     public function __construct()
     {
-        $this->client = new GuzzleClient();
+        $this->client = new GuzzleClient([
+            "base_uri" => config('iammanager.server'),
+            "timeout" => 30,
+        ]);
         $this->serverUrl = config('iammanager.server');
         $this->keyFile = file_get_contents(base_path(config('iammanager.public_key')));
     }
@@ -77,7 +79,7 @@ class Manager
     public function login(string $username, string $password)
     {
         try {
-            $response = $this->client->request('POST', "{$this->serverUrl}/oauth/token", [
+            $response = $this->client->request('POST', "/oauth/token", [
                 'form_params' => [
                     'grant_type' => config('iammanager.grant_type'),
                     'username' => $username,
@@ -257,7 +259,7 @@ class Manager
     public function refreshToken()
     {
         try {
-            $response = $this->client->request('POST', "{$this->serverUrl}/oauth/token", [
+            $response = $this->client->request('POST', "/oauth/token", [
                 'form_params' => [
                     'grant_type' => 'refresh_token',
                     'client_id' => config('iammanager.client_id'),
