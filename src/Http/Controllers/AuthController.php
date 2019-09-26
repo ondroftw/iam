@@ -19,7 +19,19 @@ class AuthController extends Controller
     {
         if (iam_manager()->login($request->get("email"), $request->get("password"))) {
             return redirect()->to(config('iammanager.redirect_url'));
+        } else {
+            return redirect()->to(config('iammanager.redirect_callback'));
         }
+    }
+
+    /**
+     * @return RedirectResponse
+     * @author Adam Ondrejkovic
+     */
+    public function logout()
+    {
+        iam_manager()->logout();
+        return redirect()->to(config('iammanager.redirect_callback'));
     }
 
 
