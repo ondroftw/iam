@@ -53,7 +53,7 @@ class Manager
      */
     public function getAuthorizationHeader()
     {
-        $token = Session::get('access_token');
+        $token = Session::get(self::IAM_TOKEN_SESSION_KEY);
         return "Bearer {$token}";
     }
 
