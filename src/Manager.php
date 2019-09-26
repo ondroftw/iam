@@ -114,6 +114,15 @@ class Manager
     }
 
     /**
+     * @author Adam Ondrejkovic
+     */
+    public function logout()
+    {
+        $this->removeSessionValues();
+        Auth::logout();
+    }
+
+    /**
      * @param $responseObject
      *
      * @author Adam Ondrejkovic

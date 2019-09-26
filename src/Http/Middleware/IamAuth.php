@@ -2,11 +2,8 @@
 
 namespace m7\Iam\Http\Middleware;
 
-use App\Http\Middleware\Authenticate;
 use Closure;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Session;
-use m7\Iam\Manager;
 
 class IamAuth
 {

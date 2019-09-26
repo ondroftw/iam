@@ -7,7 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use m7\Iam\Manager;
 
-class LoginController extends Controller
+class AuthController extends Controller
 {
     /**
      * @param Request $request
