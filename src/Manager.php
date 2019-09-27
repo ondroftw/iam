@@ -305,4 +305,28 @@ class Manager
             return false;
         }
     }
+
+    /**
+     * @return bool
+     * @author Adam Ondrejkovic
+     */
+    public function isUserLoggedIn()
+    {
+        return Auth::check() and $this->issetValidAccessToken() and $this->accessTokenBelongingToAuthUser();
+    }
+
+    /**
+     * @return bool
+     * @author Adam Ondrejkovic
+     */
+    public function accessTokenBelongingToAuthUser()
+    {
+        try {
+            return Auth::user()->iam_token == $this->getAccessTokenDecoded()->sub;
+        } catch (\Exception $exception) {
+            Log::error("Could not get decoded access token");
+            Log::error($exception->getMessage());
+            return false;
+        }
+    }
 }

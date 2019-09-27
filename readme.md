@@ -156,6 +156,10 @@ Route::middleware('iam.auth')->group(function () {
 
 ### Manager methods
 ```php
+iam_manager()->isUserLoggedIn()
+```
+
+```php
 iam_manager()->login($username, $password)
 ```
 
