@@ -101,16 +101,16 @@ class Kernel extends HttpKernel
 ### Basic
 You can always get instance of iam manager class via helper function `iam_manager()` if you need to do so.
 
-There are two routes created for login and logout. Feel free to user your own routes and functionality, but these
+There are two routes created for login and logout. Feel free to use your own routes and functionality, but these
 are recommended for logging your users in and out.
 ```php
 Route::post('iam/login', 'm7\Iam\Http\Controllers\LoginController@login')->name('iam.manager.login');
 Route::post('iam/logout', 'm7\Iam\Http\Controllers\LoginController@logout')->name('iam.manager.logout');
 ```
-Request body for this route should contain `username` and `password` keys with corresponding values.
+Request body for `iam.manager.login` route should contain `username` and `password` keys with corresponding values.
 
-Alternatively, if you do not want to use this particular route for some reason, you can login your user via
-manager helper instance `iam_manager()->login($username, $password)`
+Alternatively, if you do not want to use this particular routes for some reason, you can log in and out your users via
+manager helper instance methods `iam_manager()->login($username, $password)` and `iam_manager()->logout()`
 
 `iam_manager()->login` method returns instance of `User` model if successfully logged in, `false` otherwise.
 
