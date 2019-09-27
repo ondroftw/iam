@@ -322,7 +322,7 @@ class Manager
     public function accessTokenBelongingToAuthUser()
     {
         try {
-            return Auth::user()->iam_token == $this->getAccessTokenDecoded()->sub;
+            return Auth::user()->iam_uid == $this->getAccessTokenDecoded()->sub;
         } catch (\Exception $exception) {
             Log::error("Could not get decoded access token");
             Log::error($exception->getMessage());
