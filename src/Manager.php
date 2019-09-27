@@ -33,12 +33,6 @@ class Manager
 
     /**
      * @author Adam Ondrejkovic
-     * @var string
-     */
-    private $serverUrl;
-
-    /**
-     * @author Adam Ondrejkovic
      * @var
      */
     private $keyFile;
@@ -52,7 +46,6 @@ class Manager
             "base_uri" => config('iammanager.server'),
             "timeout" => 30,
         ]);
-        $this->serverUrl = config('iammanager.server');
         $this->keyFile = file_get_contents(base_path(config('iammanager.public_key')));
     }
 
@@ -193,7 +186,7 @@ class Manager
      */
     public function getUserResponse()
     {
-        $response = $this->client->request("GET", "{$this->serverUrl}/users/whoAmI", [
+        $response = $this->client->request("GET", "/api/users/whoAmI", [
             "headers" => [
                 "Authorization" => $this->getAuthorizationHeader(),
             ]
