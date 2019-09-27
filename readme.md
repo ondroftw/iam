@@ -46,20 +46,56 @@ IAM_MANAGER_PUBLIC_KEY=auth.pub # relative path from root of the project to publ
 ```
 `Note` public key file should also be included in your `.gitignore` file for security reasons 
 ### Middleware
-This is not required, but very useful. You can register middleware shipped with this package to protect
+Middleware setup is not required, but very useful. You can also create your own middleware using methods from this package
+
+#### IAM scopes
+You can register middleware shipped with this package to protect
 certain routes or route groups based on scopes assigned to users in IAM.
 
 To do so, register `IamScopes` middleware in your `app/Http/Kernel.php`:
 
 ```php
-protected $routeMiddleware = [
+namespace App\Http;
+
+use Illuminate\Foundation\Http\Kernel as HttpKernel;
+use m7\Iam\Http\Middleware\IamScopes;
+
+class Kernel extends HttpKernel 
+{
     ...
-    'iam.scopes' => IamScopes::class,
+    protected $routeMiddleware = [
+        ...
+        'iam.scopes' => IamScopes::class,
+        ...
+    ];
     ...
-];
+}
 ```
-Also, do not forget to add `use` directive with correct namespace before the `Kernel` class: <br/>
-`use m7\Iam\Http\Middleware\IamScopes;`
+
+#### IAM auth
+IAM auth middleware is used to protect routes that you wish to restrict access to. This restriction is based on
+having valid access token from IAM.
+
+To register IAM auth middleware, register `IamAuth` middleware class in your `app/Http/Kernel.php`:
+
+```php
+namespace App\Http;
+
+use Illuminate\Foundation\Http\Kernel as HttpKernel;
+use m7\Iam\Http\Middleware\IamAuth;
+
+class Kernel extends HttpKernel 
+{
+    ...
+    protected $routeMiddleware = [
+        ...
+        'iam.auth' => IamAuth::class,
+        ...
+    ];
+    ...
+}
+```
+
 ## Usage
 
 ### Basic
@@ -85,7 +121,8 @@ Auth::user()->hasScope($scope) // check if user has certain scope ($scope can al
 
 ### Middleware
 If you registered middleware during configuration, you can protect routes or route groups based on scopes
-provided by IAM.
+provided by IAM or based on having valid access token set
+
 #### Single scope
 Example usage of `iam.scopes` middleware for single scope could look like this
 ```php
@@ -103,4 +140,43 @@ Route::middleware('iam.scopes:auth.users.manage|auth.groups.view')->group(functi
         echo "This route is scope protected";
     });
 })
+```
+
+#### IAM Auth
+Protecting routes with `IamAuth` middleware could look like this
+```php
+Route::middleware('iam.auth')->group(function () {
+    Route::get('orders', function() {
+        echo "This route requires valid access token to be set";
+    });
+})
+```
+
+### Manager methods
+```php
+iam_manager()->login($username, $password)
+```
+
+```php
+iam_manager()->logout()
+```
+
+```php
+iam_manager()->getAccessToken()
+```
+
+```php
+iam_manager()->getAccessTokenDecoded()
+```
+
+```php
+iam_manager()->getRefreshToken()
+```
+
+```php
+iam_manager()->issetValidAccessToken()
+```
+
+```php
+iam_manager()->refreshToken()
 ```
