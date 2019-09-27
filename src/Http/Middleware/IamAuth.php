@@ -10,23 +10,23 @@ class IamAuth
     /**
      * @param $request
      * @param Closure $next
-     * @param string $scopes
      *
-     * @return mixed
+     * @return \Illuminate\Http\RedirectResponse|mixed
      * @author Adam Ondrejkovic
      */
-    public function handle($request, Closure $next, string $scopes)
+    public function handle($request, Closure $next)
     {
-        if (!iam_manager()->issetValidAccessToken()) {
-            if (Auth::check()) {
-                Auth::logout();
+        if (Auth::check()) {
+            if (!iam_manager()->issetValidAccessToken()) {
+                iam_manager()->logout();
+                return redirect()->to(config('iammanager.redirect_callback'));
             }
 
+            return $next($request);
+        } else {
             iam_manager()->removeSessionValues();
             return redirect()->to(config('iammanager.redirect_callback'));
         }
-
-        return $next($request);
 
     }
 }
