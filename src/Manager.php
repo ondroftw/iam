@@ -299,13 +299,19 @@ class Manager
         }
     }
 
-    /**
-     * @return bool
-     * @author Adam Ondrejkovic
-     */
+	/**
+	 * @return bool
+	 * @author Adam Ondrejkovic
+	 */
     public function isUserLoggedIn()
     {
-        return Auth::check() and $this->issetValidAccessToken() and $this->accessTokenBelongingToAuthUser();
+        $loggedIn = Auth::check() and $this->issetValidAccessToken() and $this->accessTokenBelongingToAuthUser();
+
+        if (!$loggedIn) {
+        	$this->logout();
+		}
+
+        return $loggedIn;
     }
 
     /**

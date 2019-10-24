@@ -10,33 +10,25 @@ use m7\Iam\Manager;
 
 trait Iam {
 
-    /**
-     * @return mixed
-     * @author Adam Ondrejkovic
-     */
+	/**
+	 * @return array
+	 * @author Adam Ondrejkovic
+	 */
     public function getScopes()
     {
-        $key = "{$this->id}-scopes";
-
-        if (Cache::has($key)) {
-            return Cache::get($key);
-        } else {
-            $scopes = iam_manager()->getUserScopes();
-
-            if (!empty($scopes)) {
-                Cache::put($key, $scopes, CarbonInterval::hours(6)->totalSeconds);
-            }
-
-            return $scopes;
-        }
+    	if (iam_manager()->isUserLoggedIn()) {
+			return iam_manager()->getUserScopes();
+		} else {
+    		return [];
+		}
     }
 
-    /**
-     * @param $scopes
-     *
-     * @return bool
-     * @author Adam Ondrejkovic
-     */
+	/**
+	 * @param $scopes
+	 *
+	 * @return bool
+	 * @author Adam Ondrejkovic
+	 */
     public function hasScope($scopes)
     {
         $userScopes = $this->getScopes();
