@@ -74,7 +74,7 @@ class Manager
         try {
             $response = $this->client->request('POST', "/api/oauth/token", [
                 'form_params' => [
-                    'grant_type' => config('iammanager.grant_type'),
+                    'grant_type' => 'password',
                     'username' => $username,
                     'password' => $password,
                     'scope' => '',
@@ -106,6 +106,28 @@ class Manager
             return false;
 
         }
+    }
+
+	/**
+	 * @return object|null
+	 * @author Adam Ondrejkovic
+	 */
+	public function notifierToken()
+	{
+		try {
+			$response = $this->client->request('POST', "/api/oauth/token", [
+				'form_params' => [
+					'grant_type' => 'client_credentials',
+					'client_id' => config('iammanager.client_id'),
+					'client_secret' => config('iammanager.client_secret'),
+				]
+			]);
+
+			return json_decode($response->getBody());
+		} catch (\Exception | GuzzleException $exception) {
+			Log::error($exception->getMessage());
+			return null;
+		}
     }
 
     /**
