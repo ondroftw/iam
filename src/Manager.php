@@ -112,7 +112,7 @@ class Manager
 	 * @return object|null
 	 * @author Adam Ondrejkovic
 	 */
-	public function notifierToken()
+	public function notifierTokenResponse()
 	{
 		try {
 			$response = $this->client->request('POST', "/api/oauth/token", [
@@ -128,6 +128,15 @@ class Manager
 			Log::error($exception->getMessage());
 			return null;
 		}
+    }
+
+	/**
+	 * @return string|null
+	 * @author Adam Ondrejkovic
+	 */
+	public function getNotifierToken()
+	{
+		return optional($this->notifierTokenResponse())->access_token;
     }
 
     /**
