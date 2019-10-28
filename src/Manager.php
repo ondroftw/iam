@@ -150,7 +150,7 @@ class Manager
 	public function setNewPassword($password, $token)
 	{
 		try {
-			$this->client->request('POST', 'users/password-recovery/change-password', [
+			$this->client->request('POST', 'api/users/password-recovery/change-password', [
 				'password' => $password,
 				'token' => $token,
 			]);
