@@ -183,20 +183,32 @@ class Manager
 		}
 	}
 
+
 	/**
 	 * @param $email
 	 *
-	 * @return mixed|null
+	 * @return string|null
 	 * @author Adam Ondrejkovic
 	 */
-	public function passwordRecoveryRequestToken($email)
+	public function getPasswordRecoveryRequestToken($email)
+	{
+		return optional($this->passwordRecoveryRequest($email))->token;
+	}
+
+	/**
+	 * @param $email
+	 *
+	 * @return object|null
+	 * @author Adam Ondrejkovic
+	 */
+	private function passwordRecoveryRequest($email)
 	{
 		try {
 			return json_decode($this->client->request("POST", "api/users/password-recovery/request", [
 				RequestOptions::FORM_PARAMS => [
 					'email' => $email,
 				],
-			])->getBody())->token;
+			])->getBody());
 		} catch (\Exception | GuzzleException $exception) {
 			Log::error($exception->getMessage());
 			return null;
