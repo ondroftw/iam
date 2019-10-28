@@ -6,6 +6,7 @@ use App\User;
 use Firebase\JWT\JWT;
 use GuzzleHttp\Client as GuzzleClient;
 use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\RequestOptions;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
@@ -44,7 +45,7 @@ class Manager
     {
         $this->client = new GuzzleClient([
             "base_uri" => config('iammanager.server'),
-            "timeout" => 30,
+            RequestOptions::TIMEOUT => 30,
         ]);
         $this->keyFile = file_get_contents(base_path(config('iammanager.public_key')));
     }
@@ -73,7 +74,7 @@ class Manager
     {
         try {
             $response = $this->client->request('POST', "/api/oauth/token", [
-                'form_params' => [
+                RequestOptions::FORM_PARAMS => [
                     'grant_type' => 'password',
                     'username' => $username,
                     'password' => $password,
@@ -116,7 +117,7 @@ class Manager
 	{
 		try {
 			$response = $this->client->request('POST', "/api/oauth/token", [
-				'form_params' => [
+				RequestOptions::FORM_PARAMS => [
 					'grant_type' => 'client_credentials',
 					'client_id' => config('iammanager.client_id'),
 					'client_secret' => config('iammanager.client_secret'),
@@ -137,6 +138,69 @@ class Manager
 	public function getNotifierToken()
 	{
 		return optional($this->notifierTokenResponse())->access_token;
+    }
+
+	/**
+	 * @param $password
+	 * @param $token
+	 *
+	 * @return bool
+	 * @author Adam Ondrejkovic
+	 */
+	public function setNewPassword($password, $token)
+	{
+		try {
+			$this->client->request('POST', 'users/password-recovery/change-password', [
+				'password' => $password,
+				'token' => $token,
+			]);
+			return true;
+		} catch (\Exception | GuzzleException $exception) {
+			Log::error($exception->getMessage());
+			return false;
+		}
+    }
+
+	/**
+	 * @param $token
+	 *
+	 * @return bool
+	 * @author Adam Ondrejkovic
+	 */
+	public function validatePasswordRecoveryToken($token)
+	{
+		try {
+			$this->client->request('POST', 'api/users/password-recovery/validate-token', [
+				RequestOptions::FORM_PARAMS => [
+					'token' => $token,
+				],
+			]);
+
+			return true;
+		} catch (\Exception | GuzzleException $exception) {
+			Log::error($exception->getMessage());
+			return false;
+		}
+	}
+
+	/**
+	 * @param $email
+	 *
+	 * @return mixed|null
+	 * @author Adam Ondrejkovic
+	 */
+	public function passwordRecoveryRequestToken($email)
+	{
+		try {
+			return json_decode($this->client->request("POST", "api/users/password-recovery/request", [
+				RequestOptions::FORM_PARAMS => [
+					'email' => $email,
+				],
+			])->getBody())->token;
+		} catch (\Exception | GuzzleException $exception) {
+			Log::error($exception->getMessage());
+			return null;
+		}
     }
 
     /**
