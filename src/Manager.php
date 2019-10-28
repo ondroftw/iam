@@ -151,8 +151,10 @@ class Manager
 	{
 		try {
 			$this->client->request('POST', 'api/users/password-recovery/change-password', [
-				'password' => $password,
-				'token' => $token,
+				RequestOptions::FORM_PARAMS => [
+					'password' => $password,
+					'token' => $token,
+				]
 			]);
 			return true;
 		} catch (\Exception | GuzzleException $exception) {
